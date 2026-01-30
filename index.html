@@ -2,16 +2,20 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Deutsch Quiz Ergebnis</title>
+  <title>Deutsch Quiz: Verbformen</title>
   <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #f0f0f7; padding: 30px; }
-    .container { max-width: 400px; background: #fff; padding: 20px; border-radius: 8px; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
+    .container { max-width: 650px; background: #fff; padding: 20px; border-radius: 8px; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
     h2 { color: #333; }
-    label { display: block; margin-top: 15px; }
-    input, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-    button { margin-top: 20px; padding: 10px 25px; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;}
-    button:hover { background: #0056b3; }
+    .question { margin-bottom: 20px; }
+    .answers { margin-top: 10px; }
+    label { display: block; margin-top: 8px; }
+    input[type="text"] { width: 80%; padding: 6px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    .btn { margin-top: 20px; padding: 10px 25px; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;}
+    .btn:hover { background: #0056b3; }
+    #score { font-size: 1.3em; margin: 20px 0; color: #155724; background: #d4edda; padding: 10px; border-radius: 6px; display: none; }
+    #sendForm { display: none; margin-top: 20px; }
     .success, .error { margin-top: 15px; padding: 10px; border-radius: 4px; }
     .success { background: #d4edda; color: #155724; }
     .error { background: #f8d7da; color: #721c24; }
@@ -19,51 +23,202 @@
 </head>
 <body>
   <div class="container">
-    <h2>Deutsch Quiz Ergebnis senden</h2>
+    <h2>Deutsch Quiz: Verbformen (Präsens, Präteritum, Perfekt)</h2>
     <form id="quizForm">
-      <label for="name">Name des Schülers:</label>
-      <input type="text" id="name" name="name" required>
+      <!-- Multiple Choice Questions -->
+      <div id="mcQuestions"></div>
+      <!-- Text Input Questions -->
+      <div id="textQuestions"></div>
+      <button type="submit" class="btn">Quiz beenden & Punkte anzeigen</button>
+    </form>
+    <div id="score"></div>
 
-      <label for="score">Punkte:</label>
-      <input type="number" id="score" name="score" required min="0">
-
-      <label for="total">Maximale Punktzahl:</label>
-      <input type="number" id="total" name="total" required min="1">
-
-      <label for="note">Note/Bemerkung:</label>
-      <textarea id="note" name="note" rows="2"></textarea>
-
-      <button type="submit">Ergebnis senden</button>
+    <form id="sendForm">
+      <label for="studentName">Name des Schülers:</label>
+      <input type="text" id="studentName" required>
+      <button type="button" class="btn" onclick="sendResult()">Ergebnis senden</button>
       <div id="message"></div>
     </form>
   </div>
 
   <script type="text/javascript">
-    emailjs.init("BCxmehFthNtwTO2lS"); // Your EmailJS Public Key
+    // EmailJS init
+    emailjs.init("BCxmehFthNtwTO2lS"); // Use your EmailJS Public Key
 
-    document.getElementById("quizForm").addEventListener("submit", function(e){
+    // Multiple Choice Questions
+    const mcQuestions = [
+      {
+        q: "Was ist die Präsens-Form von 'gehen' für 'ich'?",
+        options: ["gehe", "geht", "ging", "gegangen"],
+        answer: "gehe"
+      },
+      {
+        q: "Was ist die Präteritum-Form von 'spielen' für 'du'?",
+        options: ["spieltest", "spielst", "spielte", "gespielt"],
+        answer: "spieltest"
+      },
+      {
+        q: "Was ist die Perfekt-Form von 'machen' für 'wir'?",
+        options: ["haben gemacht", "machten", "machen", "gemacht haben"],
+        answer: "haben gemacht"
+      },
+      {
+        q: "Was ist die Präsens-Form von 'sehen' für 'er/sie/es'?",
+        options: ["sieht", "sah", "sehen", "gesehen"],
+        answer: "sieht"
+      },
+      {
+        q: "Was ist die Präteritum-Form von 'lesen' für 'ich'?",
+        options: ["las", "lese", "gelesen", "liest"],
+        answer: "las"
+      },
+      {
+        q: "Was ist die Perfekt-Form von 'schreiben' für 'du'?",
+        options: ["hast geschrieben", "schriebst", "schreibst", "geschrieben hast"],
+        answer: "hast geschrieben"
+      },
+      {
+        q: "Was ist die Präsens-Form von 'fahren' für 'wir'?",
+        options: ["fahren", "fuhren", "gefahren", "fahrt"],
+        answer: "fahren"
+      },
+      {
+        q: "Was ist die Präteritum-Form von 'trinken' für 'er/sie/es'?",
+        options: ["trank", "trinkt", "getrunken", "trinke"],
+        answer: "trank"
+      },
+      {
+        q: "Was ist die Perfekt-Form von 'kommen' für 'ihr'?",
+        options: ["seid gekommen", "kamt", "kommt", "gekommen seid"],
+        answer: "seid gekommen"
+      },
+      {
+        q: "Was ist die Präsens-Form von 'laufen' für 'du'?",
+        options: ["läufst", "liefst", "laufen", "gelaufen"],
+        answer: "läufst"
+      }
+    ];
+
+    // Text Input Questions
+    const textQuestions = [
+      {
+        q: "Schreibe die Präteritum-Form von 'essen' für 'ich'.",
+        answer: "aß"
+      },
+      {
+        q: "Schreibe die Perfekt-Form von 'sehen' für 'du'.",
+        answer: "hast gesehen"
+      },
+      {
+        q: "Schreibe die Präsens-Form von 'lesen' für 'wir'.",
+        answer: "lesen"
+      },
+      {
+        q: "Schreibe die Präteritum-Form von 'machen' für 'er/sie/es'.",
+        answer: "machte"
+      },
+      {
+        q: "Schreibe die Perfekt-Form von 'trinken' für 'ich'.",
+        answer: "habe getrunken"
+      },
+      {
+        q: "Schreibe die Präsens-Form von 'schreiben' für 'ihr'.",
+        answer: "schreibt"
+      },
+      {
+        q: "Schreibe die Präteritum-Form von 'gehen' für 'wir'.",
+        answer: "gingen"
+      },
+      {
+        q: "Schreibe die Perfekt-Form von 'fahren' für 'du'.",
+        answer: "bist gefahren"
+      },
+      {
+        q: "Schreibe die Präsens-Form von 'kommen' für 'sie' (Plural).",
+        answer: "kommen"
+      },
+      {
+        q: "Schreibe die Präteritum-Form von 'laufen' für 'ich'.",
+        answer: "lief"
+      }
+    ];
+
+    // Render Multiple Choice
+    const mcDiv = document.getElementById('mcQuestions');
+    mcQuestions.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.className = 'question';
+      div.innerHTML = `<strong>${i+1}. ${q.q}</strong>`;
+      const answersDiv = document.createElement('div');
+      answersDiv.className = 'answers';
+      q.options.forEach(opt => {
+        answersDiv.innerHTML += `
+          <label>
+            <input type="radio" name="mc${i}" value="${opt}" required> ${opt}
+          </label>`;
+      });
+      div.appendChild(answersDiv);
+      mcDiv.appendChild(div);
+    });
+
+    // Render Text Input
+    const textDiv = document.getElementById('textQuestions');
+    textQuestions.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.className = 'question';
+      div.innerHTML = `<strong>${i+11}. ${q.q}</strong>
+      <input type="text" name="text${i}" required autocomplete="off">`;
+      textDiv.appendChild(div);
+    });
+
+    // Quiz Submission
+    document.getElementById('quizForm').addEventListener('submit', function(e){
       e.preventDefault();
-      var name = document.getElementById("name").value;
-      var score = document.getElementById("score").value;
-      var total = document.getElementById("total").value;
-      var note = document.getElementById("note").value;
+      let score = 0;
+      // Check MC answers
+      mcQuestions.forEach((q, i) => {
+        const val = document.querySelector(`input[name="mc${i}"]:checked`);
+        if(val && val.value.trim().toLowerCase() === q.answer.trim().toLowerCase()) score++;
+      });
+      // Check Text answers
+      textQuestions.forEach((q, i) => {
+        const val = document.querySelector(`input[name="text${i}"]`);
+        if(val && val.value.trim().toLowerCase() === q.answer.trim().toLowerCase()) score++;
+      });
+
+      document.getElementById('score').style.display = 'block';
+      document.getElementById('score').innerHTML = `Du hast <strong>${score}</strong> von 20 Punkten erreicht!`;
+
+      // Show send form
+      document.getElementById('sendForm').style.display = 'block';
+      // Hide quiz form
+      document.getElementById('quizForm').style.display = 'none';
+
+      // Store score for sending
+      window.quizScore = score;
+    });
+
+    // Send result via EmailJS
+    function sendResult() {
+      var name = document.getElementById("studentName").value;
+      var score = window.quizScore || 0;
 
       var templateParams = {
         to_name: "Dr. Barbati",
         student_name: name,
         student_score: score,
-        student_total: total,
-        student_note: note
+        student_total: 20,
+        student_note: "Quiz Verbformen (Präsens, Präteritum, Perfekt)"
       };
 
       emailjs.send('service_zqzqohc', 'template_h3s2ul6', templateParams)
         .then(function(response) {
           document.getElementById("message").innerHTML = '<div class="success">Email wurde erfolgreich gesendet!</div>';
-          document.getElementById("quizForm").reset();
+          document.getElementById("sendForm").reset();
         }, function(error) {
           document.getElementById("message").innerHTML = '<div class="error">Email konnte nicht gesendet werden. Bitte versuche es erneut.</div>';
         });
-    });
+    }
   </script>
 </body>
 </html>
